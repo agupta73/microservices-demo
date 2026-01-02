@@ -1,0 +1,420 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "managedClusters_aks_c1_eastus_name": {
+      "type": "String"
+    },
+    "networkSecurityGroups_nsg_c1_name": {
+      "type": "String"
+    },
+    "userAssignedIdentities_aks_c1_eastus_agentpool_externalid": {
+      "type": "String"
+    },
+    "virtualNetworks_vnet_c1_name": {
+      "type": "String"
+    },
+    "virtualNetworks_vnet_c2_externalid": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "apiVersion": "2024-07-01",
+      "location": "eastus",
+      "name": "[parameters('networkSecurityGroups_nsg_c1_name')]",
+      "properties": {
+        "securityRules": [
+          {
+            "id": "[resourceId('Microsoft.Network/networkSecurityGroups/securityRules', parameters('networkSecurityGroups_nsg_c1_name'), 'allow-c2-to-c1')]",
+            "name": "allow-c2-to-c1",
+            "properties": {
+              "access": "Allow",
+              "destinationAddressPrefix": "10.0.0.0/16",
+              "destinationAddressPrefixes": [],
+              "destinationPortRange": "*",
+              "destinationPortRanges": [],
+              "direction": "Inbound",
+              "priority": 100,
+              "protocol": "Tcp",
+              "sourceAddressPrefix": "10.1.0.0/16",
+              "sourceAddressPrefixes": [],
+              "sourcePortRange": "*",
+              "sourcePortRanges": []
+            },
+            "type": "Microsoft.Network/networkSecurityGroups/securityRules"
+          }
+        ]
+      },
+      "type": "Microsoft.Network/networkSecurityGroups"
+    },
+    {
+      "apiVersion": "2025-05-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_vnet_c1_name'), 'subnet-c1')]"
+      ],
+      "identity": {
+        "type": "SystemAssigned"
+      },
+      "location": "eastus",
+      "name": "[parameters('managedClusters_aks_c1_eastus_name')]",
+      "properties": {
+        "agentPoolProfiles": [
+          {
+            "count": 2,
+            "enableAutoScaling": false,
+            "enableEncryptionAtHost": false,
+            "enableFIPS": false,
+            "enableNodePublicIP": false,
+            "enableUltraSSD": false,
+            "kubeletDiskType": "OS",
+            "maxPods": 30,
+            "mode": "System",
+            "name": "nodepool1",
+            "orchestratorVersion": "1.33",
+            "osDiskSizeGB": 128,
+            "osDiskType": "Managed",
+            "osSKU": "Ubuntu",
+            "osType": "Linux",
+            "powerState": {
+              "code": "Running"
+            },
+            "scaleDownMode": "Delete",
+            "securityProfile": {
+              "enableSecureBoot": false,
+              "enableVTPM": false
+            },
+            "type": "VirtualMachineScaleSets",
+            "upgradeSettings": {
+              "maxSurge": "10%",
+              "maxUnavailable": "0"
+            },
+            "vmSize": "Standard_DC2s_v3",
+            "vnetSubnetID": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_vnet_c1_name'), 'subnet-c1')]"
+          }
+        ],
+        "autoUpgradeProfile": {
+          "nodeOSUpgradeChannel": "NodeImage"
+        },
+        "bootstrapProfile": {
+          "artifactSource": "Direct"
+        },
+        "disableLocalAccounts": false,
+        "dnsPrefix": "aks-c1-eas-rg-c1-eastus-8a3535",
+        "enableRBAC": true,
+        "identityProfile": {
+          "kubeletidentity": {
+            "clientId": "fcc3176d-0a63-4c66-bc6a-8f1d5581dd66",
+            "objectId": "95da2e57-56fc-4b4b-9d6e-c1ea3fff4da1",
+            "resourceId": "[parameters('userAssignedIdentities_aks_c1_eastus_agentpool_externalid')]"
+          }
+        },
+        "kubernetesVersion": "1.33",
+        "linuxProfile": {
+          "adminUsername": "azureuser",
+          "ssh": {
+            "publicKeys": [
+              {
+                "keyData": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDUDdWJWWw1YGD0l/uh43GibmtSMdSrA2EoQa70qCqA2/J5drpx7vZSGutMAaW5Okmakwl/YUak9JFBIgsfdtAB68RxS3BCm0zuGXfXfY93m5Jmk13Js/PWDGLYyGhEAb01y5bBfR3OJx9VQrpcWq4eDNnyAYYMxOs2PK2FSmD+H8apO5CB9rWZU+7ekgA3XEhGCqe7tikJWcac0wYaNUGgmZU0qnVvD9tiJSXLvbPQ6M+B4PpnqWynR3EzDn2XZpkawylq28n/KziVuCTKdWlZgarXTCctOYVq/kPwb8HURObTFiopQ6tw4Gb714xkY0T2HywQrdk+3c3wDMxtcJKt"
+              }
+            ]
+          }
+        },
+        "metricsProfile": {
+          "costAnalysis": {
+            "enabled": false
+          }
+        },
+        "networkProfile": {
+          "dnsServiceIP": "10.0.16.10",
+          "ipFamilies": [
+            "IPv4"
+          ],
+          "loadBalancerProfile": {
+            "backendPoolType": "nodeIPConfiguration",
+            "managedOutboundIPs": {
+              "count": 1
+            }
+          },
+          "loadBalancerSku": "standard",
+          "networkDataplane": "azure",
+          "networkPlugin": "azure",
+          "networkPolicy": "azure",
+          "outboundType": "loadBalancer",
+          "serviceCidr": "10.0.16.0/20",
+          "serviceCidrs": [
+            "10.0.16.0/20"
+          ]
+        },
+        "nodeProvisioningProfile": {
+          "defaultNodePools": "Auto",
+          "mode": "Manual"
+        },
+        "nodeResourceGroup": "[concat('MC_rg-c1-eastus_', parameters('managedClusters_aks_c1_eastus_name'), '_eastus')]",
+        "oidcIssuerProfile": {
+          "enabled": false
+        },
+        "securityProfile": {},
+        "servicePrincipalProfile": {
+          "clientId": "msi"
+        },
+        "storageProfile": {
+          "diskCSIDriver": {
+            "enabled": true
+          },
+          "fileCSIDriver": {
+            "enabled": true
+          },
+          "snapshotController": {
+            "enabled": true
+          }
+        },
+        "supportPlan": "KubernetesOfficial",
+        "windowsProfile": {
+          "adminUsername": "azureuser",
+          "enableCSIProxy": true
+        },
+        "workloadAutoScalerProfile": {}
+      },
+      "sku": {
+        "name": "Base",
+        "tier": "Free"
+      },
+      "tags": {
+        "cluster": "c1",
+        "environment": "demo",
+        "region": "eastus"
+      },
+      "type": "Microsoft.ContainerService/managedClusters"
+    },
+    {
+      "apiVersion": "2024-07-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_nsg_c1_name'))]"
+      ],
+      "name": "[concat(parameters('networkSecurityGroups_nsg_c1_name'), '/allow-c2-to-c1')]",
+      "properties": {
+        "access": "Allow",
+        "destinationAddressPrefix": "10.0.0.0/16",
+        "destinationAddressPrefixes": [],
+        "destinationPortRange": "*",
+        "destinationPortRanges": [],
+        "direction": "Inbound",
+        "priority": 100,
+        "protocol": "Tcp",
+        "sourceAddressPrefix": "10.1.0.0/16",
+        "sourceAddressPrefixes": [],
+        "sourcePortRange": "*",
+        "sourcePortRanges": []
+      },
+      "type": "Microsoft.Network/networkSecurityGroups/securityRules"
+    },
+    {
+      "apiVersion": "2024-07-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_nsg_c1_name'))]"
+      ],
+      "location": "eastus",
+      "name": "[parameters('virtualNetworks_vnet_c1_name')]",
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "10.0.0.0/16"
+          ]
+        },
+        "enableDdosProtection": false,
+        "privateEndpointVNetPolicies": "Disabled",
+        "subnets": [
+          {
+            "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_vnet_c1_name'), 'subnet-c1-monitoring')]",
+            "name": "subnet-c1-monitoring",
+            "properties": {
+              "addressPrefix": "10.0.1.0/24",
+              "delegations": [],
+              "privateEndpointNetworkPolicies": "Disabled",
+              "privateLinkServiceNetworkPolicies": "Enabled"
+            },
+            "type": "Microsoft.Network/virtualNetworks/subnets"
+          },
+          {
+            "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_vnet_c1_name'), 'subnet-c1')]",
+            "name": "subnet-c1",
+            "properties": {
+              "addressPrefix": "10.0.0.0/24",
+              "delegations": [],
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_nsg_c1_name'))]"
+              },
+              "privateEndpointNetworkPolicies": "Disabled",
+              "privateLinkServiceNetworkPolicies": "Enabled"
+            },
+            "type": "Microsoft.Network/virtualNetworks/subnets"
+          }
+        ],
+        "virtualNetworkPeerings": [
+          {
+            "id": "[resourceId('Microsoft.Network/virtualNetworks/virtualNetworkPeerings', parameters('virtualNetworks_vnet_c1_name'), 'c1-to-c2')]",
+            "name": "c1-to-c2",
+            "properties": {
+              "allowForwardedTraffic": false,
+              "allowGatewayTransit": false,
+              "allowVirtualNetworkAccess": true,
+              "doNotVerifyRemoteGateways": false,
+              "peerCompleteVnets": true,
+              "peeringState": "Connected",
+              "peeringSyncLevel": "FullyInSync",
+              "remoteAddressSpace": {
+                "addressPrefixes": [
+                  "10.1.0.0/16"
+                ]
+              },
+              "remoteVirtualNetwork": {
+                "id": "[parameters('virtualNetworks_vnet_c2_externalid')]"
+              },
+              "remoteVirtualNetworkAddressSpace": {
+                "addressPrefixes": [
+                  "10.1.0.0/16"
+                ]
+              },
+              "useRemoteGateways": false
+            },
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings"
+          }
+        ]
+      },
+      "tags": {
+        "cluster": "c1",
+        "environment": "demo"
+      },
+      "type": "Microsoft.Network/virtualNetworks"
+    },
+    {
+      "apiVersion": "2024-07-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_vnet_c1_name'))]"
+      ],
+      "name": "[concat(parameters('virtualNetworks_vnet_c1_name'), '/subnet-c1-monitoring')]",
+      "properties": {
+        "addressPrefix": "10.0.1.0/24",
+        "delegations": [],
+        "privateEndpointNetworkPolicies": "Disabled",
+        "privateLinkServiceNetworkPolicies": "Enabled"
+      },
+      "type": "Microsoft.Network/virtualNetworks/subnets"
+    },
+    {
+      "apiVersion": "2024-07-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_vnet_c1_name'))]"
+      ],
+      "name": "[concat(parameters('virtualNetworks_vnet_c1_name'), '/c1-to-c2')]",
+      "properties": {
+        "allowForwardedTraffic": false,
+        "allowGatewayTransit": false,
+        "allowVirtualNetworkAccess": true,
+        "doNotVerifyRemoteGateways": false,
+        "peerCompleteVnets": true,
+        "peeringState": "Connected",
+        "peeringSyncLevel": "FullyInSync",
+        "remoteAddressSpace": {
+          "addressPrefixes": [
+            "10.1.0.0/16"
+          ]
+        },
+        "remoteVirtualNetwork": {
+          "id": "[parameters('virtualNetworks_vnet_c2_externalid')]"
+        },
+        "remoteVirtualNetworkAddressSpace": {
+          "addressPrefixes": [
+            "10.1.0.0/16"
+          ]
+        },
+        "useRemoteGateways": false
+      },
+      "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings"
+    },
+    {
+      "apiVersion": "2025-05-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.ContainerService/managedClusters', parameters('managedClusters_aks_c1_eastus_name'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_vnet_c1_name'), 'subnet-c1')]"
+      ],
+      "name": "[concat(parameters('managedClusters_aks_c1_eastus_name'), '/nodepool1')]",
+      "properties": {
+        "count": 2,
+        "enableAutoScaling": false,
+        "enableEncryptionAtHost": false,
+        "enableFIPS": false,
+        "enableNodePublicIP": false,
+        "enableUltraSSD": false,
+        "kubeletDiskType": "OS",
+        "maxPods": 30,
+        "mode": "System",
+        "orchestratorVersion": "1.33",
+        "osDiskSizeGB": 128,
+        "osDiskType": "Managed",
+        "osSKU": "Ubuntu",
+        "osType": "Linux",
+        "powerState": {
+          "code": "Running"
+        },
+        "scaleDownMode": "Delete",
+        "securityProfile": {
+          "enableSecureBoot": false,
+          "enableVTPM": false
+        },
+        "type": "VirtualMachineScaleSets",
+        "upgradeSettings": {
+          "maxSurge": "10%",
+          "maxUnavailable": "0"
+        },
+        "vmSize": "Standard_DC2s_v3",
+        "vnetSubnetID": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_vnet_c1_name'), 'subnet-c1')]"
+      },
+      "type": "Microsoft.ContainerService/managedClusters/agentPools"
+    },
+    {
+      "apiVersion": "2025-04-02-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.ContainerService/managedClusters/agentPools', parameters('managedClusters_aks_c1_eastus_name'), 'nodepool1')]",
+        "[resourceId('Microsoft.ContainerService/managedClusters', parameters('managedClusters_aks_c1_eastus_name'))]"
+      ],
+      "name": "[concat(parameters('managedClusters_aks_c1_eastus_name'), '/nodepool1/aks-nodepool1-21510799-vmss000000')]",
+      "properties": {
+        "network": {}
+      },
+      "type": "Microsoft.ContainerService/managedClusters/agentPools/machines"
+    },
+    {
+      "apiVersion": "2025-04-02-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.ContainerService/managedClusters/agentPools', parameters('managedClusters_aks_c1_eastus_name'), 'nodepool1')]",
+        "[resourceId('Microsoft.ContainerService/managedClusters', parameters('managedClusters_aks_c1_eastus_name'))]"
+      ],
+      "name": "[concat(parameters('managedClusters_aks_c1_eastus_name'), '/nodepool1/aks-nodepool1-21510799-vmss000001')]",
+      "properties": {
+        "network": {}
+      },
+      "type": "Microsoft.ContainerService/managedClusters/agentPools/machines"
+    },
+    {
+      "apiVersion": "2024-07-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_vnet_c1_name'))]",
+        "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_nsg_c1_name'))]"
+      ],
+      "name": "[concat(parameters('virtualNetworks_vnet_c1_name'), '/subnet-c1')]",
+      "properties": {
+        "addressPrefix": "10.0.0.0/24",
+        "delegations": [],
+        "networkSecurityGroup": {
+          "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_nsg_c1_name'))]"
+        },
+        "privateEndpointNetworkPolicies": "Disabled",
+        "privateLinkServiceNetworkPolicies": "Enabled"
+      },
+      "type": "Microsoft.Network/virtualNetworks/subnets"
+    }
+  ],
+  "variables": {}
+}

@@ -1,0 +1,75 @@
+[
+  {
+    "changedTime": "2025-12-31T01:51:49.314860+00:00",
+    "createdTime": "2025-12-31T01:51:44.905390+00:00",
+    "extendedLocation": null,
+    "id": "/subscriptions/8a353573-11b5-487f-ae19-23e98b217094/resourceGroups/rg-c2-westus/providers/Microsoft.Network/virtualNetworks/vnet-c2",
+    "identity": null,
+    "kind": null,
+    "location": "westus",
+    "managedBy": null,
+    "name": "vnet-c2",
+    "plan": null,
+    "properties": null,
+    "provisioningState": "Succeeded",
+    "resourceGroup": "rg-c2-westus",
+    "sku": null,
+    "tags": {
+      "cluster": "c2",
+      "environment": "demo"
+    },
+    "type": "Microsoft.Network/virtualNetworks"
+  },
+  {
+    "changedTime": "2025-12-31T03:41:24.096805+00:00",
+    "createdTime": "2025-12-31T03:27:55.044118+00:00",
+    "extendedLocation": null,
+    "id": "/subscriptions/8a353573-11b5-487f-ae19-23e98b217094/resourceGroups/rg-c2-westus/providers/Microsoft.ContainerService/managedClusters/aks-c2-westus",
+    "identity": {
+      "principalId": "54e1686a-9d81-4a65-a638-ae2fb66d8b12",
+      "tenantId": "0860999e-99bc-44bc-90c2-600088eb6a1b",
+      "type": "SystemAssigned",
+      "userAssignedIdentities": null
+    },
+    "kind": null,
+    "location": "westus",
+    "managedBy": null,
+    "name": "aks-c2-westus",
+    "plan": null,
+    "properties": null,
+    "provisioningState": "Succeeded",
+    "resourceGroup": "rg-c2-westus",
+    "sku": {
+      "capacity": null,
+      "family": null,
+      "model": null,
+      "name": "Base",
+      "size": null,
+      "tier": "Free"
+    },
+    "tags": {
+      "cluster": "c2",
+      "environment": "demo",
+      "region": "westus"
+    },
+    "type": "Microsoft.ContainerService/managedClusters"
+  },
+  {
+    "changedTime": "2025-12-31T11:05:08.869294+00:00",
+    "createdTime": "2025-12-31T10:55:07.990889+00:00",
+    "extendedLocation": null,
+    "id": "/subscriptions/8a353573-11b5-487f-ae19-23e98b217094/resourceGroups/rg-c2-westus/providers/Microsoft.Network/networkSecurityGroups/nsg-c2",
+    "identity": null,
+    "kind": null,
+    "location": "westus",
+    "managedBy": null,
+    "name": "nsg-c2",
+    "plan": null,
+    "properties": null,
+    "provisioningState": "Succeeded",
+    "resourceGroup": "rg-c2-westus",
+    "sku": null,
+    "tags": null,
+    "type": "Microsoft.Network/networkSecurityGroups"
+  }
+]
