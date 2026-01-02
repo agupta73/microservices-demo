@@ -43,7 +43,8 @@ spec:
               - ALL
           privileged: false
           readOnlyRootFilesystem: true
-        image: adservice
+        image: docker.io/agupta73/boutique-adservice:v1.0
+
         ports:
         - containerPort: 9555
         env:

@@ -44,7 +44,7 @@ spec:
                 - ALL
             privileged: false
             readOnlyRootFilesystem: true
-          image: docker.io/agupta73/boutique-frontend:v1.2
+          image: frontend
           ports:
           - containerPort: 8080
           readinessProbe:
@@ -70,9 +70,8 @@ spec:
             value: "productcatalogservice:3550"
           - name: CURRENCY_SERVICE_ADDR
             value: "currencyservice:7000"
-          # Cart service disabled - frontend will work without it
-          # - name: CART_SERVICE_ADDR
-          #   value: "cartservice:7070"
+          - name: CART_SERVICE_ADDR
+            value: "cartservice:7070"
           - name: RECOMMENDATION_SERVICE_ADDR
             value: "recommendationservice:8080"
           - name: SHIPPING_SERVICE_ADDR

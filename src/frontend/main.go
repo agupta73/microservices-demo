@@ -131,7 +131,8 @@ func main() {
 	addr := os.Getenv("LISTEN_ADDR")
 	mustMapEnv(&svc.productCatalogSvcAddr, "PRODUCT_CATALOG_SERVICE_ADDR")
 	mustMapEnv(&svc.currencySvcAddr, "CURRENCY_SERVICE_ADDR")
-	mustMapEnv(&svc.cartSvcAddr, "CART_SERVICE_ADDR")
+	// Cart service is optional - allow empty or invalid address
+	svc.cartSvcAddr = os.Getenv("CART_SERVICE_ADDR")
 	mustMapEnv(&svc.recommendationSvcAddr, "RECOMMENDATION_SERVICE_ADDR")
 	mustMapEnv(&svc.checkoutSvcAddr, "CHECKOUT_SERVICE_ADDR")
 	mustMapEnv(&svc.shippingSvcAddr, "SHIPPING_SERVICE_ADDR")
@@ -140,7 +141,12 @@ func main() {
 
 	mustConnGRPC(ctx, &svc.currencySvcConn, svc.currencySvcAddr)
 	mustConnGRPC(ctx, &svc.productCatalogSvcConn, svc.productCatalogSvcAddr)
-	mustConnGRPC(ctx, &svc.cartSvcConn, svc.cartSvcAddr)
+	// Cart service connection is optional - don't fail if unavailable
+	if svc.cartSvcAddr != "" && svc.cartSvcAddr != "127.0.0.1:0" {
+		optionalConnGRPC(ctx, log, &svc.cartSvcConn, svc.cartSvcAddr, "cart service")
+	} else {
+		log.Info("Cart service disabled or not configured")
+	}
 	mustConnGRPC(ctx, &svc.recommendationSvcConn, svc.recommendationSvcAddr)
 	mustConnGRPC(ctx, &svc.shippingSvcConn, svc.shippingSvcAddr)
 	mustConnGRPC(ctx, &svc.checkoutSvcConn, svc.checkoutSvcAddr)
@@ -231,5 +237,20 @@ func mustConnGRPC(ctx context.Context, conn **grpc.ClientConn, addr string) {
 		grpc.WithStatsHandler(otelgrpc.NewClientHandler()))
 	if err != nil {
 		panic(errors.Wrapf(err, "grpc: failed to connect %s", addr))
+	}
+}
+
+func optionalConnGRPC(ctx context.Context, log logrus.FieldLogger, conn **grpc.ClientConn, addr string, serviceName string) {
+	var err error
+	_, cancel := context.WithTimeout(ctx, time.Second*3)
+	defer cancel()
+	*conn, err = grpc.NewClient(addr,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithStatsHandler(otelgrpc.NewClientHandler()))
+	if err != nil {
+		log.Warnf("grpc: failed to connect to optional %s at %s: %v", serviceName, addr, err)
+		*conn = nil
+	} else {
+		log.Infof("Successfully connected to optional %s at %s", serviceName, addr)
 	}
 }

@@ -55,16 +55,28 @@ func (fe *frontendServer) getProduct(ctx context.Context, id string) (*pb.Produc
 }
 
 func (fe *frontendServer) getCart(ctx context.Context, userID string) ([]*pb.CartItem, error) {
+	if fe.cartSvcConn == nil {
+		// Cart service unavailable - return empty cart
+		return []*pb.CartItem{}, nil
+	}
 	resp, err := pb.NewCartServiceClient(fe.cartSvcConn).GetCart(ctx, &pb.GetCartRequest{UserId: userID})
 	return resp.GetItems(), err
 }
 
 func (fe *frontendServer) emptyCart(ctx context.Context, userID string) error {
+	if fe.cartSvcConn == nil {
+		// Cart service unavailable - no-op, return success
+		return nil
+	}
 	_, err := pb.NewCartServiceClient(fe.cartSvcConn).EmptyCart(ctx, &pb.EmptyCartRequest{UserId: userID})
 	return err
 }
 
 func (fe *frontendServer) insertCart(ctx context.Context, userID, productID string, quantity int32) error {
+	if fe.cartSvcConn == nil {
+		// Cart service unavailable - return error to indicate cart is disabled
+		return errors.New("cart service is not available")
+	}
 	_, err := pb.NewCartServiceClient(fe.cartSvcConn).AddItem(ctx, &pb.AddItemRequest{
 		UserId: userID,
 		Item: &pb.CartItem{

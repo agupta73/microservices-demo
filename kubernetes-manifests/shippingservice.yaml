@@ -42,7 +42,7 @@ spec:
               - ALL
           privileged: false
           readOnlyRootFilesystem: true
-        image: shippingservice
+        image: docker.io/agupta73/boutique-shippingservice:v1.0
         ports:
         - containerPort: 50051
         env:

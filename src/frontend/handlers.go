@@ -71,8 +71,9 @@ func (fe *frontendServer) homeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	cart, err := fe.getCart(r.Context(), sessionID(r))
 	if err != nil {
-		renderHTTPError(log, r, w, errors.Wrap(err, "could not retrieve cart"), http.StatusInternalServerError)
-		return
+		// Cart service unavailable - use empty cart
+		log.WithField("error", err).Warn("cart service unavailable, using empty cart")
+		cart = []*pb.CartItem{}
 	}
 
 	type productView struct {
@@ -164,8 +165,9 @@ func (fe *frontendServer) productHandler(w http.ResponseWriter, r *http.Request)
 
 	cart, err := fe.getCart(r.Context(), sessionID(r))
 	if err != nil {
-		renderHTTPError(log, r, w, errors.Wrap(err, "could not retrieve cart"), http.StatusInternalServerError)
-		return
+		// Cart service unavailable - use empty cart
+		log.WithField("error", err).Warn("cart service unavailable, using empty cart")
+		cart = []*pb.CartItem{}
 	}
 
 	price, err := fe.convertCurrency(r.Context(), p.GetPriceUsd(), currentCurrency(r))
@@ -229,7 +231,10 @@ func (fe *frontendServer) addToCartHandler(w http.ResponseWriter, r *http.Reques
 	}
 
 	if err := fe.insertCart(r.Context(), sessionID(r), p.GetId(), int32(payload.Quantity)); err != nil {
-		renderHTTPError(log, r, w, errors.Wrap(err, "failed to add to cart"), http.StatusInternalServerError)
+		// Cart service unavailable - redirect to home with message
+		log.WithField("error", err).Warn("cart service unavailable, cannot add to cart")
+		w.Header().Set("location", baseUrl + "/")
+		w.WriteHeader(http.StatusFound)
 		return
 	}
 	w.Header().Set("location", baseUrl + "/cart")
@@ -241,8 +246,8 @@ func (fe *frontendServer) emptyCartHandler(w http.ResponseWriter, r *http.Reques
 	log.Debug("emptying cart")
 
 	if err := fe.emptyCart(r.Context(), sessionID(r)); err != nil {
-		renderHTTPError(log, r, w, errors.Wrap(err, "failed to empty cart"), http.StatusInternalServerError)
-		return
+		// Cart service unavailable - no-op, just redirect
+		log.WithField("error", err).Warn("cart service unavailable, cannot empty cart")
 	}
 	w.Header().Set("location", baseUrl + "/")
 	w.WriteHeader(http.StatusFound)
@@ -258,8 +263,9 @@ func (fe *frontendServer) viewCartHandler(w http.ResponseWriter, r *http.Request
 	}
 	cart, err := fe.getCart(r.Context(), sessionID(r))
 	if err != nil {
-		renderHTTPError(log, r, w, errors.Wrap(err, "could not retrieve cart"), http.StatusInternalServerError)
-		return
+		// Cart service unavailable - use empty cart
+		log.WithField("error", err).Warn("cart service unavailable, using empty cart")
+		cart = []*pb.CartItem{}
 	}
 
 	// ignores the error retrieving recommendations since it is not critical

@@ -43,7 +43,7 @@ spec:
               - ALL
           privileged: false
           readOnlyRootFilesystem: true
-        image: currencyservice
+        image: docker.io/agupta73/boutique-currencyservice:v1.0
         ports:
         - name: grpc
           containerPort: 7000
